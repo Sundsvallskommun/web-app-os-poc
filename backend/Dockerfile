@@ -4,8 +4,8 @@ FROM registry.access.redhat.com/ubi9/nodejs-20 AS deps
 #RUN apk add --no-cache libc6-compat
 # RUN apt-get update
 # RUN apt-get install -y openssl
-# RUN dnf install -y openssl && dnf clean all
-RUN openssl version
+
+RUN npm install -g yarn
 
 WORKDIR /app
 COPY package.json yarn.lock ./
