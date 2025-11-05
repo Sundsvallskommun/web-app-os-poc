@@ -5,10 +5,11 @@ FROM registry.access.redhat.com/ubi9/nodejs-20 AS deps
 # RUN apt-get update
 # RUN apt-get install -y openssl
 
-RUN npm install -g yarn
 
 WORKDIR /app
 COPY package.json yarn.lock ./
+
+RUN npm install -g yarn
 RUN yarn install --frozen-lockfile
 
 # If using npm with a `package-lock.json` comment out above and use below instead
@@ -21,6 +22,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+RUN npm install -g yarn
 RUN yarn build
 
 # Production image, copy all the files and run next
