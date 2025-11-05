@@ -2,8 +2,10 @@
 FROM registry.access.redhat.com/ubi9/nodejs-20 AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 #RUN apk add --no-cache libc6-compat
-RUN apt-get update
-RUN apt-get install -y openssl
+# RUN apt-get update
+# RUN apt-get install -y openssl
+RUN apk update
+RUN apk add openssl
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
@@ -22,8 +24,10 @@ RUN yarn build
 
 # Production image, copy all the files and run next
 FROM registry.access.redhat.com/ubi9/nodejs-20 AS runner
-RUN apt-get update
-RUN apt-get install -y openssl
+# RUN apt-get update
+# RUN apt-get install -y openssl
+RUN apk update
+RUN apk add openssl
 WORKDIR /app
 
 ENV NODE_ENV production
