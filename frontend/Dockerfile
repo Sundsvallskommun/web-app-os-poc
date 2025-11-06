@@ -7,6 +7,8 @@ COPY package.json yarn.lock ./
 
 RUN npm install -g yarn
 RUN yarn install --frozen-lockfile
+RUN id
+RUN ls -al
 
 # Rebuild the source code only when needed
 FROM registry.access.redhat.com/ubi9/nodejs-20 AS builder
@@ -14,6 +16,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 COPY .env-example .env.local
+RUN id
+RUN ls -al
 
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm install -g yarn
@@ -43,6 +47,9 @@ COPY --from=builder /app/package.json ./package.json
 # COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=1001:0 /app/.next/standalone ./
 COPY --from=builder --chown=1001:0 /app/.next/static ./.next/static
+
+RUN id
+RUN ls -al
 
 # USER nextjs
 
