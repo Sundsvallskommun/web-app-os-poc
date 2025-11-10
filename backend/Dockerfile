@@ -41,6 +41,11 @@ ENV NODE_ENV production
 # COPY --from=builder --chown=nodejs:nodejs /app/ ./
 COPY --from=builder --chown=1001:0 /app/ ./
 
+# Create directories that need to be writable and set group permissions
+RUN mkdir -p /app/data/sessions /app/data/logs/error && \
+    chgrp -R 0 /app/data && \
+    chmod -R g=u /app/data
+
 # USER nodejs
 
 EXPOSE 3000
