@@ -5,7 +5,6 @@ FROM registry.access.redhat.com/ubi9/nodejs-20 AS deps
 # RUN apt-get update
 # RUN apt-get install -y openssl
 
-
 WORKDIR /app
 COPY package.json yarn.lock ./
 
