@@ -15,7 +15,7 @@ FROM registry.access.redhat.com/ubi9/nodejs-20 AS builder
 WORKDIR /app
 COPY --from=deps --chown=1001:0 /app/node_modules ./node_modules
 COPY --chown=1001:0 . .
-COPY --chown=1001:0 .env-example .env.local
+COPY --chown=1001:0 .env-cicd .env.local
 RUN id
 RUN ls -al
 
@@ -49,11 +49,21 @@ COPY --from=builder --chown=1001:0 /app/.next/standalone ./
 COPY --from=builder --chown=1001:0 /app/.next/static ./.next/static
 
 RUN id
-RUN ls -al
 
 # USER nextjs
 
-EXPOSE 3000
-ENV PORT 3000
+# Copy entrypoint script
+COPY --chown=1001:0 entrypoint.sh ./entrypoint.sh
+USER 0
+RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
+USER 1001
+RUN pwd
+RUN ls -al
 
-CMD ["node", "server.js"]
+# Use entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# EXPOSE 3000
+# ENV PORT 3000
+
+# CMD ["node", "server.js"]
