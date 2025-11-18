@@ -48,6 +48,9 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder --chown=1001:0 /app/.next/standalone ./
 COPY --from=builder --chown=1001:0 /app/.next/static ./.next/static
 
+# Make .next directory group-writable for OpenShift
+RUN chmod -R g+w /app/.next
+
 RUN id
 
 # Copy entrypoint script
