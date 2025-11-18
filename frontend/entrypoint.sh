@@ -15,6 +15,7 @@ replace_env_var() {
 }
 
 echo "Replacing runtime environment variables..."
+echo "Running as user: $(id)"
 
 replace_env_var "NEXT_PUBLIC_APP_NAME_PLACEHOLDER" "${NEXT_PUBLIC_APP_NAME}"
 replace_env_var "NEXT_PUBLIC_API_URL_PLACEHOLDER" "${NEXT_PUBLIC_API_URL}"
