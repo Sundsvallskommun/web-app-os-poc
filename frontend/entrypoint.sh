@@ -1,7 +1,6 @@
 #!/bin/sh
 # entrypoint.sh
 
-# Function to replace placeholder with environment variable value
 replace_env_var() {
   local placeholder=$1
   local value=$2
@@ -17,12 +16,15 @@ replace_env_var() {
 
 echo "Replacing runtime environment variables..."
 
-# Define your key-value pairs (placeholder -> env var)
-replace_env_var "REPLACE_API_URL" "${API_URL}"
-replace_env_var "REPLACE_BACKEND_URL" "${BACKEND_URL}"
-# Add more as needed:
-# replace_env_var "REPLACE_ANOTHER_VAR" "${ANOTHER_VAR}"
-# replace_env_var "REPLACE_YET_ANOTHER" "${YET_ANOTHER}"
+replace_env_var "NEXT_PUBLIC_APP_NAME_PLACEHOLDER" "${NEXT_PUBLIC_APP_NAME}"
+replace_env_var "NEXT_PUBLIC_API_URL_PLACEHOLDER" "${NEXT_PUBLIC_API_URL}"
+replace_env_var "DOMAIN_NAME_PLACEHOLDER" "${DOMAIN_NAME}"
+replace_env_var "/BASE_PATH_PLACEHOLDER" "${BASE_PATH}"
+replace_env_var "/NEXT_PUBLIC_BASE_PATH_PLACEHOLDER" "${NEXT_PUBLIC_BASE_PATH}"
+replace_env_var "ADMIN_URL_PLACEHOLDER" "${ADMIN_URL}"
+replace_env_var "NEXT_PUBLIC_PROTECTED_ROUTES_PLACEHOLDER" "${NEXT_PUBLIC_PROTECTED_ROUTES}"
+replace_env_var "HEALTH_USERNAME_PLACEHOLDER" "${HEALTH_USERNAME}"
+replace_env_var "HEALTH_PASSWORD_PLACEHOLDER" "${HEALTH_PASSWORD}"
 
 echo "Starting Next.js..."
 exec node server.js
