@@ -38,6 +38,7 @@ yarn-error.log*
 .env.production.local
 .npmrc
 .yarnrc
+middleware-envs.js
 
 # vercel
 .vercel
