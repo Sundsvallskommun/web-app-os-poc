@@ -50,8 +50,6 @@ COPY --from=builder --chown=1001:0 /app/.next/static ./.next/static
 
 RUN id
 
-# USER nextjs
-
 # Copy entrypoint script
 COPY --chown=1001:0 entrypoint.sh ./entrypoint.sh
 USER 0
