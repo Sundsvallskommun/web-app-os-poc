@@ -6,6 +6,9 @@ import {
   NODE_ENV,
   ORIGIN,
   PORT,
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
   SAML_CALLBACK_URL,
   SAML_ENTRY_SSO,
   SAML_FAILURE_REDIRECT,
@@ -48,13 +51,26 @@ import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidOrigin } from './utils/isValidOrigin';
 import { isValidUrl } from './utils/util';
+import { RedisStore } from "connect-redis"
+import { createClient } from "redis"
+
+// Create Redis client
+const redisClient = createClient({
+    socket: {
+        host: REDIS_HOST || 'redis',
+        port: parseInt(REDIS_PORT, 10) || 6379
+      },
+      // password: REDIS_PASSWORD
+    });
+let redisStore = new RedisStore({ client: redisClient, prefix: "os-poc:" });
+redisClient.connect().catch(console.error);
 
 const corsWhitelist = ORIGIN.split(',');
 
-const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
-const sessionTTL = 4 * 24 * 60 * 60;
-// NOTE: memory uses ms while file uses seconds
-const sessionStore = new SessionStoreCreate(SESSION_MEMORY ? { checkPeriod: sessionTTL * 1000 } : { sessionTTL, path: './data/sessions' });
+// const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
+// const sessionTTL = 4 * 24 * 60 * 60;
+// // NOTE: memory uses ms while file uses seconds
+// const sessionStore = new SessionStoreCreate(SESSION_MEMORY ? { checkPeriod: sessionTTL * 1000 } : { sessionTTL, path: './data/sessions' });
 
 // const prisma = new PrismaClient();
 // const apiService = new ApiService();
@@ -84,6 +100,7 @@ const samlStrategy = new Strategy(
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
   },
   async function (profile: Profile, done: VerifiedCallback) {
+    console.log('SAML profile received:', profile);
     if (!profile) {
       return done({
         name: 'SAML_MISSING_PROFILE',
@@ -191,7 +208,8 @@ class App {
         secret: SECRET_KEY,
         resave: false,
         saveUninitialized: false,
-        store: sessionStore,
+        // store: sessionStore,
+        store: redisStore,
       }),
     );
 

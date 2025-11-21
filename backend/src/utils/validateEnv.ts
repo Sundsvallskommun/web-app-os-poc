@@ -18,6 +18,9 @@ const validateEnv = () => {
     SAML_IDP_PUBLIC_CERT: str(),
     SAML_PRIVATE_KEY: str(),
     SAML_PUBLIC_KEY: str(),
+    REDIS_PORT: port(),
+    REDIS_HOST: str(),
+    REDIS_PASSWORD: str(),
   });
 };
 
