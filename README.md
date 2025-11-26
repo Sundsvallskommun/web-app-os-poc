@@ -115,3 +115,4 @@ module.exports = {
 ```
 
 Som hjälp i VSCode rekommenderas [i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally).
+.
