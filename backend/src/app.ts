@@ -357,6 +357,10 @@ class App {
       console.log(`Success Redirect: ${successRedirect.toString()}`);
       console.log(`Failure Redirect: ${failureRedirect.toString()}`);
 
+      console.log(`SAML_IDP_PUBLIC_CERT: ${SAML_IDP_PUBLIC_CERT}`);
+      console.log(`SAML_PRIVATE_KEY: ${SAML_PRIVATE_KEY}`);
+      console.log(`SAML_PUBLIC_KEY: ${SAML_PUBLIC_KEY}`);
+
       passport.authenticate('saml', { failureFlash: true }, (err, user, info) => {
         console.log('=== PASSPORT AUTHENTICATE RESULT ===');
         console.log('err:', err);
