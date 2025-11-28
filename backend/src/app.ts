@@ -165,6 +165,10 @@ const samlStrategy = new Strategy(
   },
 );
 
+samlStrategy.error = function (err) {
+  console.error('SAML Strategy Error:', err);
+};
+
 class App {
   public app: express.Application;
   public env: string;
@@ -353,9 +357,12 @@ class App {
       console.log(`Success Redirect: ${successRedirect.toString()}`);
       console.log(`Failure Redirect: ${failureRedirect.toString()}`);
 
-      passport.authenticate('saml', (err, user) => {
-        console.log('saml callback, err:', JSON.stringify(err));
-        console.log('saml callback, user:', JSON.stringify(user));
+      passport.authenticate('saml', { failureFlash: true }, (err, user, info) => {
+        console.log('=== PASSPORT AUTHENTICATE RESULT ===');
+        console.log('err:', err);
+        console.log('user:', user);
+        console.log('info:', info);
+        console.log('====================================');
         if (err) {
           console.log(`SAML Callback Error: ${JSON.stringify(err)}`);
           const queries = new URLSearchParams(failureRedirect.searchParams);
