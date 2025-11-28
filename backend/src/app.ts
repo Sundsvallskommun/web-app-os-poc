@@ -93,6 +93,7 @@ const samlStrategy = new Strategy(
     audience: false,
   },
   async function (profile: Profile, done: VerifiedCallback) {
+    console.log('=== VERIFY CALLBACK CALLED ===');
     console.log('profile:', profile);
     if (!profile) {
       console.log('No profile');
@@ -159,7 +160,7 @@ const samlStrategy = new Strategy(
     }
   },
   async function (profile: Profile, done: VerifiedCallback) {
-    console.log('running second callback');
+    console.log('=== LOGOUT CALLBACK CALLED ===');
     return done(null, profile);
   },
 );
@@ -219,7 +220,9 @@ class App {
 
     this.app.use(passport.initialize());
     this.app.use(passport.session());
+    console.log('Registering SAML strategy with passport..');
     passport.use('saml', samlStrategy);
+    console.log('Done. SAML strategy registered with passport');
 
     this.app.use(
       cors({
