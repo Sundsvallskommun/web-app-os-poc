@@ -87,6 +87,7 @@ const samlStrategy = new Strategy(
   },
   async function (profile: Profile, done: VerifiedCallback) {
     if (!profile) {
+      logger.error('No profile found in SAML response from IDP. Check if the IDP is sending the correct SAML Response.');
       return done({
         name: 'SAML_MISSING_PROFILE',
         message: 'Missing SAML profile',
@@ -95,6 +96,9 @@ const samlStrategy = new Strategy(
     const { givenName, surname, citizenIdentifier, username } = profile;
 
     if (!givenName || !surname || !citizenIdentifier) {
+      logger.error(
+        'Could not extract necessary profile data fields from the IDP profile. Does the Profile interface match the IDP profile response? The profile response may differ, for example Onegate vs ADFS.',
+      );
       return done({
         name: 'SAML_MISSING_ATTRIBUTES',
         message: 'Missing profile attributes',
@@ -131,9 +135,12 @@ const samlStrategy = new Strategy(
         surname: surname,
       };
 
+      logger.info(`Found user: ${JSON.stringify(findUser)}`);
+
       done(null, findUser);
     } catch (err) {
       if (err instanceof HttpException && err?.status === 404) {
+        logger.error('Error when calling Citizen:');
         // Handle missing person form Citizen
       }
       done(err);
