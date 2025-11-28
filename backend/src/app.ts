@@ -341,6 +341,8 @@ class App {
       console.log(`Failure Redirect: ${failureRedirect.toString()}`);
 
       passport.authenticate('saml', (err, user) => {
+        console.log('saml callback, err:', JSON.stringify(err));
+        console.log('saml callback, user:', JSON.stringify(user));
         if (err) {
           console.log(`SAML Callback Error: ${JSON.stringify(err)}`);
           const queries = new URLSearchParams(failureRedirect.searchParams);
