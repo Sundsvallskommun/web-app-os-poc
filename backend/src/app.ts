@@ -135,9 +135,9 @@ const samlStrategy = new Strategy(
       const findUser: User = {
         // personId: personId,
         username: username,
-        name: `${givenName} ${surname}`,
+        name: `${givenName} ${sn}`,
         givenName: givenName,
-        surname: surname,
+        surname: sn,
       };
 
       console.log(`Found user: ${JSON.stringify(findUser)}`);
