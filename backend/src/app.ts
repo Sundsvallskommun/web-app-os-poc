@@ -69,10 +69,14 @@ passport.deserializeUser(function (user, done) {
 const samlStrategy = new Strategy(
   {
     disableRequestedAuthnContext: true,
-    identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    //attributeConsumingServiceIndex: '2',
+    //xmlSignatureTransforms: ['test'],
+    //authnContext: ['urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified'],
+    // identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified',
     callbackUrl: SAML_CALLBACK_URL,
     entryPoint: SAML_ENTRY_SSO,
-    // decryptionPvk: SAML_PRIVATE_KEY,
+    //decryptionPvk: SAML_PRIVATE_KEY,
     privateKey: SAML_PRIVATE_KEY,
     // Identity Provider's public key
     idpCert: SAML_IDP_PUBLIC_CERT,
@@ -80,20 +84,28 @@ const samlStrategy = new Strategy(
     wantAssertionsSigned: false,
     signatureAlgorithm: 'sha256',
     digestAlgorithm: 'sha256',
-    wantAuthnResponseSigned: false,
-    acceptedClockSkewMs: -1,
-    audience: false,
+    // maxAssertionAgeMs: 2592000000,
+    // authnRequestBinding: 'HTTP-POST',
+    //logoutUrl: 'http://194.71.24.30/sso',
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
+    acceptedClockSkewMs: -1,
+    wantAuthnResponseSigned: false,
+    audience: false,
   },
   async function (profile: Profile, done: VerifiedCallback) {
-    console.log(`SAML Profile received: ${JSON.stringify(profile)}`);
+    console.log('profile:', profile);
     if (!profile) {
-      console.log('No profile found in SAML response from IDP. Check if the IDP is sending the correct SAML Response.');
+      console.log('No profile');
       return done({
         name: 'SAML_MISSING_PROFILE',
         message: 'Missing SAML profile',
       });
     }
+    // Depending on using Onegate or ADFS for federation the profile data looks a bit different
+    // Here we use the null coalescing operator (??) to handle both cases.
+    // (A switch from Onegate to ADFS was done on august 6 2023 due to problems in MobilityGuard.)
+    //
+    // const { givenName, sn, email, groups } = profile;
     const givenName = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ?? profile['givenName'];
     const sn = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] ?? profile['sn'];
     const email = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? profile['email'];
@@ -110,34 +122,28 @@ const samlStrategy = new Strategy(
       });
     }
 
-    //   const groupList: ADRole[] =
-    //   groups !== undefined
-    //     ? (groups
-    //         .split(',')
-    //         .map(x => x.toLowerCase())
-    //         .filter(x => x.includes('sg_appl_app_')) as ADRole[])
-    //     : [];
+    // if (!authorizeGroups(groups)) {
+    //   console.log('Group authorization failed. Is the user a member of the authorized groups?');
+    //   return done(null, null, {
+    //     name: 'SAML_MISSING_GROUP',
+    //     message: 'SAML_MISSING_GROUP',
+    //   });
+    // }
 
-    // const appGroups: ADRole[] = groupList.length > 0 ? groupList : groupList.concat('sg_appl_app_read');
+    const groupList: string[] = groups !== undefined ? (groups.split(',').map(x => x.toLowerCase()) as string[]) : [];
+
+    const appGroups: string[] = groupList.length > 0 ? groupList : [];
 
     try {
-      // const personNumber = profile.citizenIdentifier;
-      // const citizenResult = await apiService.get<any>({ url: `citizen/2.0/${personNumber}/guid` });
-      // const { data: personId } = citizenResult;
-
-      // if (!personId) {
-      //   return done({
-      //     name: 'SAML_CITIZEN_FAILED',
-      //     message: 'Failed to fetch user from Citizen API',
-      //   });
-      // }
-
-      const findUser: User = {
-        // personId: personId,
-        username: username,
+      const findUser = {
         name: `${givenName} ${sn}`,
-        givenName: givenName,
-        surname: sn,
+        firstName: givenName,
+        lastName: sn,
+        username: username,
+        email: email,
+        groups: appGroups,
+        role: [],
+        permissions: [],
       };
 
       console.log(`Found user: ${JSON.stringify(findUser)}`);
@@ -145,13 +151,15 @@ const samlStrategy = new Strategy(
       done(null, findUser);
     } catch (err) {
       if (err instanceof HttpException && err?.status === 404) {
+        // TODO: Handle missing person form Citizen?
         console.log('Error when calling Citizen:');
-        // Handle missing person form Citizen
+        console.log(err);
       }
       done(err);
     }
   },
   async function (profile: Profile, done: VerifiedCallback) {
+    console.log('running second callback');
     return done(null, {});
   },
 );
