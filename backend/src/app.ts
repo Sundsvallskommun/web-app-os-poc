@@ -107,10 +107,10 @@ const samlStrategy = new Strategy(
     //
     // const { givenName, sn, email, groups } = profile;
     const givenName = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ?? profile['givenName'];
-    const sn = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] ?? profile['sn'];
-    const email = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? profile['email'];
-    const groups = profile['http://schemas.xmlsoap.org/claims/Group']?.join(',') ?? profile['groups'];
-    const username = profile['urn:oid:0.9.2342.19200300.100.1.1'];
+    const sn = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] ?? profile['surname'];
+    const email = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? profile['email'] ?? 'foobar@example.com';
+    const groups = profile['http://schemas.xmlsoap.org/claims/Group']?.join(',') ?? profile['groups'] ?? 'group1,group2';
+    const username = profile['urn:oid:0.9.2342.19200300.100.1.1'] ?? profile['username'] ?? 'min01sid';
 
     if (!givenName || !sn || !email || !groups || !username) {
       console.log(
@@ -160,7 +160,7 @@ const samlStrategy = new Strategy(
   },
   async function (profile: Profile, done: VerifiedCallback) {
     console.log('running second callback');
-    return done(null, {});
+    return done(null, profile);
   },
 );
 
@@ -329,6 +329,8 @@ class App {
 
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
       let successRedirect: URL, failureRedirect: URL;
+
+      console.log(req.body);
 
       let urls = req?.body?.RelayState.split(',');
 
