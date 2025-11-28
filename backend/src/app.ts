@@ -86,20 +86,25 @@ const samlStrategy = new Strategy(
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
   },
   async function (profile: Profile, done: VerifiedCallback) {
+    console.log(`SAML Profile received: ${JSON.stringify(profile)}`);
     if (!profile) {
-      logger.error('No profile found in SAML response from IDP. Check if the IDP is sending the correct SAML Response.');
+      console.log('No profile found in SAML response from IDP. Check if the IDP is sending the correct SAML Response.');
       return done({
         name: 'SAML_MISSING_PROFILE',
         message: 'Missing SAML profile',
       });
     }
-    const { givenName, surname, citizenIdentifier, username } = profile;
+    const givenName = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ?? profile['givenName'];
+    const sn = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] ?? profile['sn'];
+    const email = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? profile['email'];
+    const groups = profile['http://schemas.xmlsoap.org/claims/Group']?.join(',') ?? profile['groups'];
+    const username = profile['urn:oid:0.9.2342.19200300.100.1.1'];
 
-    if (!givenName || !surname || !citizenIdentifier) {
-      logger.error(
+    if (!givenName || !sn || !email || !groups || !username) {
+      console.log(
         'Could not extract necessary profile data fields from the IDP profile. Does the Profile interface match the IDP profile response? The profile response may differ, for example Onegate vs ADFS.',
       );
-      return done({
+      return done(null, null, {
         name: 'SAML_MISSING_ATTRIBUTES',
         message: 'Missing profile attributes',
       });
@@ -140,7 +145,7 @@ const samlStrategy = new Strategy(
       done(null, findUser);
     } catch (err) {
       if (err instanceof HttpException && err?.status === 404) {
-        logger.error('Error when calling Citizen:');
+        console.log('Error when calling Citizen:');
         // Handle missing person form Citizen
       }
       done(err);
