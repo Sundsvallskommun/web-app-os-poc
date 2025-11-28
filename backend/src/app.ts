@@ -135,7 +135,7 @@ const samlStrategy = new Strategy(
         surname: surname,
       };
 
-      logger.info(`Found user: ${JSON.stringify(findUser)}`);
+      console.log(`Found user: ${JSON.stringify(findUser)}`);
 
       done(null, findUser);
     } catch (err) {
@@ -175,10 +175,10 @@ class App {
 
   public listen() {
     this.app.listen(this.port, () => {
-      logger.info(`=================================`);
-      logger.info(`======= ENV: ${this.env} =======`);
-      logger.info(`🚀 App listening on the port ${this.port}`);
-      logger.info(`=================================`);
+      console.log(`=================================`);
+      console.log(`======= ENV: ${this.env} =======`);
+      console.log(`🚀 App listening on the port ${this.port}`);
+      console.log(`=================================`);
     });
   }
 
@@ -319,6 +319,8 @@ class App {
 
       let urls = req?.body?.RelayState.split(',');
 
+      console.log(`SAML RelayState URLs: ${JSON.stringify(urls)}`);
+
       if (isValidUrl(urls[0]) && isValidOrigin(urls[0])) {
         successRedirect = new URL(urls[0]);
       } else {
@@ -330,8 +332,12 @@ class App {
         failureRedirect = successRedirect;
       }
 
+      console.log(`Success Redirect: ${successRedirect.toString()}`);
+      console.log(`Failure Redirect: ${failureRedirect.toString()}`);
+
       passport.authenticate('saml', (err, user) => {
         if (err) {
+          console.log(`SAML Callback Error: ${JSON.stringify(err)}`);
           const queries = new URLSearchParams(failureRedirect.searchParams);
           if (err?.name) {
             queries.append('failMessage', err.name);
@@ -341,18 +347,23 @@ class App {
           failureRedirect.search = queries.toString();
           res.redirect(failureRedirect.toString());
         } else if (!user) {
+          console.log(`No user returned from SAML callback.`);
           const failMessage = new URLSearchParams(failureRedirect.searchParams);
           failMessage.append('failMessage', 'NO_USER');
           failureRedirect.search = failMessage.toString();
           res.redirect(failureRedirect.toString());
         } else {
+          console.log(`User returned from SAML callback: ${JSON.stringify(user)}`);
+          console.log(`Logging in user and redirecting to ${successRedirect.toString()}`);
           req.login(user, loginErr => {
             if (loginErr) {
+              console.log(`Login Error: ${JSON.stringify(loginErr)}`);
               const failMessage = new URLSearchParams(failureRedirect.searchParams);
               failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
               failureRedirect.search = failMessage.toString();
               res.redirect(failureRedirect.toString());
             }
+            console.log(`Login successful, redirecting to ${successRedirect.toString()}`);
             return res.redirect(successRedirect.toString());
           });
         }
