@@ -9,6 +9,7 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 | SimulatorServer |     2.0 |
 
 ## Utveckling
+(ska fyllas på)
 
 ### Krav
 
